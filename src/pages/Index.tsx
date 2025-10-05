@@ -4,7 +4,10 @@ import { MarketCard } from "@/components/MarketCard";
 import { useMarketData } from "@/hooks/useMarketData";
 
 const Index = () => {
-  const { question, endTime, yesProbability, yesPool, noPool } = useMarketData();
+  const { question, yesProbability, yesPool, noPool } = useMarketData();
+
+  // Use the correct end date: October 31, 2025
+  const correctEndDate = new Date('2025-10-31T23:59:59Z');
 
   // Create market object for display
   const market = {
@@ -13,7 +16,7 @@ const Index = () => {
     description: 'Predicción sobre si el grupo de Telegram de Uniswap Swappers MX alcanzará 1,000 miembros antes del 31 de Octubre de 2025.',
     category: 'Crypto',
     outcomes: ['Yes', 'No'],
-    end_date: new Date(endTime * 1000).toISOString(),
+    end_date: correctEndDate.toISOString(),
     total_volume: Number(yesPool + noPool) / 1e18,
     total_liquidity: Number(yesPool + noPool) / 1e18,
     image_url: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800',
