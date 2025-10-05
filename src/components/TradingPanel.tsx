@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
+import { useAccount } from 'wagmi';
+import { tradeSchema } from '@/lib/validation';
 
 interface TradingPanelProps {
   market: any;
@@ -14,6 +16,7 @@ interface TradingPanelProps {
 export const TradingPanel = ({ market }: TradingPanelProps) => {
   const [amount, setAmount] = useState("");
   const [selectedOutcome, setSelectedOutcome] = useState(0);
+  const { address, isConnected } = useAccount();
 
   const outcomes = Array.isArray(market.outcomes) ? market.outcomes : ["Yes", "No"];
   const avgPrice = 0.65;
@@ -22,8 +25,26 @@ export const TradingPanel = ({ market }: TradingPanelProps) => {
   const maxProfit = amount ? (parseFloat(potentialReturn) - parseFloat(amount)).toFixed(2) : "0";
 
   const handleTrade = (type: "buy" | "sell") => {
-    if (!amount || parseFloat(amount) <= 0) {
-      toast.error("Please enter a valid amount");
+    if (!isConnected || !address) {
+      toast.error("Wallet not connected", {
+        description: "Please connect your wallet to trade"
+      });
+      return;
+    }
+
+    const amountNum = parseFloat(amount);
+    
+    // Validate trade input
+    const validation = tradeSchema.safeParse({
+      amount: amountNum,
+      outcome: outcomes[selectedOutcome],
+      marketId: market?.id || 'temp-id'
+    });
+
+    if (!validation.success) {
+      toast.error("Invalid trade", {
+        description: validation.error.errors[0].message
+      });
       return;
     }
 
@@ -117,14 +138,17 @@ export const TradingPanel = ({ market }: TradingPanelProps) => {
           <Button
             className="w-full gap-2 glow-primary h-12 text-base font-semibold"
             onClick={() => handleTrade("buy")}
+            disabled={!isConnected}
           >
             <Wallet className="w-5 h-5" />
-            Place Buy Order
+            {isConnected ? "Place Buy Order" : "Connect Wallet to Trade"}
           </Button>
 
-          <p className="text-xs text-center text-muted-foreground">
-            Connect your wallet to trade
-          </p>
+          {!isConnected && (
+            <p className="text-xs text-center text-muted-foreground">
+              Connect your wallet to trade
+            </p>
+          )}
         </TabsContent>
 
         <TabsContent value="sell" className="space-y-6">
@@ -162,9 +186,10 @@ export const TradingPanel = ({ market }: TradingPanelProps) => {
           <Button
             className="w-full gap-2 bg-destructive hover:bg-destructive/90 h-12 text-base font-semibold"
             onClick={() => handleTrade("sell")}
+            disabled={!isConnected}
           >
             <TrendingDown className="w-5 h-5" />
-            Place Sell Order
+            {isConnected ? "Place Sell Order" : "Connect Wallet to Trade"}
           </Button>
         </TabsContent>
       </Tabs>
