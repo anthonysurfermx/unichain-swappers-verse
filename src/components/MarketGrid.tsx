@@ -66,9 +66,9 @@ export const MarketGrid = ({ selectedCategory }: MarketGridProps) => {
   if (isLoading) {
     return (
       <div className="flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-3">
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-80 rounded-xl" />
+            <Skeleton key={i} className="h-24" />
           ))}
         </div>
       </div>
@@ -77,14 +77,7 @@ export const MarketGrid = ({ selectedCategory }: MarketGridProps) => {
 
   return (
     <div className="flex-1">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">
-          {selectedCategory === "All" ? "All Markets" : selectedCategory}
-        </h2>
-        <p className="text-muted-foreground">{markets?.length || 0} markets</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="space-y-3">
         {markets?.map((market) => (
           <MarketCard key={market.id} market={market} />
         ))}

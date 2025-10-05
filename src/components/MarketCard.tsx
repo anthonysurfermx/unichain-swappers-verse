@@ -1,6 +1,7 @@
-import { TrendingUp, TrendingDown, Clock, DollarSign } from "lucide-react";
+import { Clock, TrendingUp, TrendingDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 
 interface MarketCardProps {
@@ -17,14 +18,13 @@ interface MarketCardProps {
 }
 
 export const MarketCard = ({ market }: MarketCardProps) => {
-  // Calculate mock probability (in real app, this would come from market_prices)
   const probability = Math.floor(Math.random() * 40) + 30;
   const change24h = (Math.random() * 10 - 5).toFixed(1);
   const isPositive = parseFloat(change24h) >= 0;
 
   const formatVolume = (volume: number) => {
-    if (volume >= 1000000) return `$${(volume / 1000000).toFixed(1)}M`;
-    if (volume >= 1000) return `$${(volume / 1000).toFixed(0)}K`;
+    if (volume >= 1000000) return `$${(volume / 1000000).toFixed(1)}m`;
+    if (volume >= 1000) return `$${(volume / 1000).toFixed(0)}k`;
     return `$${volume}`;
   };
 
@@ -34,55 +34,65 @@ export const MarketCard = ({ market }: MarketCardProps) => {
 
   return (
     <Link to={`/market/${market.id}`}>
-      <Card className="glass border-border hover:border-primary/50 transition-all duration-300 overflow-hidden group cursor-pointer h-full">
-        {market.image_url && (
-          <div className="relative h-40 overflow-hidden">
-            <img
-              src={market.image_url}
-              alt={market.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
-            <Badge className="absolute top-3 left-3 bg-card/80 backdrop-blur">
-              {market.category}
-            </Badge>
-          </div>
-        )}
-
-        <div className="p-5 space-y-4">
-          <div>
-            <h3 className="font-bold text-lg line-clamp-2 group-hover:text-primary transition-colors">
-              {market.title}
-            </h3>
-            <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-              {market.description}
-            </p>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-3xl font-bold text-success">{probability}%</span>
-                <div className={`flex items-center gap-1 ${isPositive ? "text-success" : "text-destructive"}`}>
-                  {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  <span className="text-sm font-medium">{change24h}%</span>
+      <Card className="border border-border hover:shadow-md transition-all duration-200 overflow-hidden group cursor-pointer bg-card">
+        <div className="p-4">
+          <div className="flex items-start gap-4">
+            {market.image_url && (
+              <img
+                src={market.image_url}
+                alt={market.title}
+                className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
+              />
+            )}
+            
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm mb-1 line-clamp-2 group-hover:text-primary transition-colors">
+                {market.title}
+              </h3>
+              
+              <div className="flex items-center gap-3 mb-3">
+                <Badge variant="secondary" className="text-xs">
+                  {market.category}
+                </Badge>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <Clock className="w-3 h-3" />
+                  <span>{daysUntilEnd}d</span>
                 </div>
+                <span className="text-xs text-muted-foreground">{formatVolume(market.total_volume)} Vol.</span>
               </div>
-              <p className="text-xs text-muted-foreground">YES probability</p>
-            </div>
-
-            <div className="text-right">
-              <div className="flex items-center gap-1 justify-end mb-1">
-                <DollarSign className="w-4 h-4 text-muted-foreground" />
-                <span className="font-semibold">{formatVolume(market.total_volume)}</span>
+              
+              <div className="flex items-center gap-2">
+                {market.outcomes.slice(0, 2).map((outcome, index) => {
+                  const outcomeProb = index === 0 ? probability : 100 - probability;
+                  const isYes = outcome.toLowerCase() === 'yes' || outcome.toLowerCase() === 'sí';
+                  const isNo = outcome.toLowerCase() === 'no';
+                  
+                  return (
+                    <Button
+                      key={outcome}
+                      size="sm"
+                      className={`flex-1 h-8 text-xs font-semibold ${
+                        isYes ? 'yes-button' : isNo ? 'no-button' : 'bg-secondary'
+                      }`}
+                      onClick={(e) => e.preventDefault()}
+                    >
+                      <span className="mr-1">{outcome}</span>
+                      <span>{outcomeProb}%</span>
+                    </Button>
+                  );
+                })}
               </div>
-              <p className="text-xs text-muted-foreground">Volume</p>
             </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-sm text-muted-foreground pt-3 border-t border-border">
-            <Clock className="w-4 h-4" />
-            <span>Ends in {daysUntilEnd} days</span>
+            
+            <div className="flex flex-col items-end justify-start">
+              <div className="text-2xl font-bold text-foreground mb-1">
+                {probability}%
+              </div>
+              <div className={`flex items-center gap-1 text-xs ${isPositive ? "text-success" : "text-destructive"}`}>
+                {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                <span>{change24h}%</span>
+              </div>
+            </div>
           </div>
         </div>
       </Card>
