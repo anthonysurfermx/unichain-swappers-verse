@@ -1,24 +1,8 @@
-import { Wallet, TrendingUp } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export const Navbar = () => {
-  const { address, isConnected } = useAccount();
-  const { connectors, connect } = useConnect();
-  const { disconnect } = useDisconnect();
-
-  const handleConnect = () => {
-    const injectedConnector = connectors.find(c => c.id === 'injected');
-    if (injectedConnector) {
-      connect({ connector: injectedConnector });
-    }
-  };
-
-  const formatAddress = (addr: string) => {
-    return `${addr.substring(0, 4)}...${addr.substring(addr.length - 4)}`;
-  };
-  
   return (
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="container mx-auto px-6">
@@ -37,26 +21,7 @@ export const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {isConnected && address ? (
-              <Button 
-                variant="secondary"
-                size="default"
-                className="rounded-full font-mono"
-                onClick={() => disconnect()}
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                {formatAddress(address)}
-              </Button>
-            ) : (
-              <Button 
-                variant="pill"
-                size="default"
-                onClick={handleConnect}
-              >
-                <Wallet className="w-4 h-4 mr-2" />
-                Connect Wallet
-              </Button>
-            )}
+            <ConnectButton />
           </div>
         </div>
       </div>

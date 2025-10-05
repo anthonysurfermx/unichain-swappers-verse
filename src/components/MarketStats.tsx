@@ -1,5 +1,6 @@
-import { DollarSign, TrendingUp, Users, Droplet } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Droplet } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useMarketData } from "@/hooks/useMarketData";
 
 interface MarketStatsProps {
   market: {
@@ -9,36 +10,39 @@ interface MarketStatsProps {
 }
 
 export const MarketStats = ({ market }: MarketStatsProps) => {
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) return `$${(value / 1000000).toFixed(2)}M`;
-    if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
-    return `$${value.toFixed(0)}`;
+  const { yesProbability } = useMarketData();
+
+  const formatEth = (value: number) => {
+    return `${value.toFixed(4)} ETH`;
   };
+
+  const yesProb = (yesProbability / 100).toFixed(1);
+  const noProb = ((10000 - yesProbability) / 100).toFixed(1);
 
   const stats = [
     {
-      label: "Total Volume",
-      value: formatCurrency(market.total_volume),
-      icon: DollarSign,
-      color: "text-primary",
-    },
-    {
-      label: "Liquidity",
-      value: formatCurrency(market.total_liquidity),
+      label: "Total Liquidity",
+      value: formatEth(market.total_liquidity),
       icon: Droplet,
       color: "text-blue-400",
     },
     {
-      label: "Total Traders",
-      value: Math.floor(Math.random() * 1000) + 100,
-      icon: Users,
-      color: "text-purple-400",
+      label: "Total Volume",
+      value: formatEth(market.total_volume),
+      icon: DollarSign,
+      color: "text-primary",
     },
     {
-      label: "24h Change",
-      value: `+${(Math.random() * 10).toFixed(1)}%`,
+      label: "YES Probability",
+      value: `${yesProb}%`,
       icon: TrendingUp,
       color: "text-success",
+    },
+    {
+      label: "NO Probability",
+      value: `${noProb}%`,
+      icon: TrendingDown,
+      color: "text-destructive",
     },
   ];
 

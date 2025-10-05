@@ -6,66 +6,62 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Wallet, TrendingUp, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
-import { useAccount } from 'wagmi';
-import { tradeSchema } from '@/lib/validation';
+import { useAccount } from "wagmi";
+import { useMarketData } from "@/hooks/useMarketData";
+import { useTradingActions } from "@/hooks/useTradingActions";
 
 interface TradingPanelProps {
-  market: any;
+  market?: any;
 }
 
 export const TradingPanel = ({ market }: TradingPanelProps) => {
   const [amount, setAmount] = useState("");
-  const [selectedOutcome, setSelectedOutcome] = useState(0);
-  const { address, isConnected } = useAccount();
+  const [shares, setShares] = useState("10");
+  const [selectedOutcome, setSelectedOutcome] = useState<'yes' | 'no'>('yes');
 
-  const outcomes = Array.isArray(market.outcomes) ? market.outcomes : ["Yes", "No"];
-  const avgPrice = 0.65;
-  const shares = amount ? (parseFloat(amount) / avgPrice).toFixed(2) : "0";
-  const potentialReturn = amount ? (parseFloat(amount) / avgPrice).toFixed(2) : "0";
-  const maxProfit = amount ? (parseFloat(potentialReturn) - parseFloat(amount)).toFixed(2) : "0";
+  const { isConnected } = useAccount();
+  const { yesProbability, userPosition } = useMarketData();
+  const { buyShares, sellShares, isPending } = useTradingActions();
 
-  const handleTrade = (type: "buy" | "sell") => {
-    if (!isConnected || !address) {
-      toast.error("Wallet not connected", {
-        description: "Please connect your wallet to trade"
-      });
+  const outcomes = ["Yes", "No"];
+
+  // Calculate probability percentages
+  const yesPercent = (yesProbability / 100).toFixed(1);
+  const noPercent = ((10000 - yesProbability) / 100).toFixed(1);
+
+  const handleTrade = async (type: "buy" | "sell") => {
+    if (!isConnected) {
+      toast.error("Please connect your wallet first");
       return;
     }
 
-    const amountNum = parseFloat(amount);
-    
-    // Validate trade input
-    const validation = tradeSchema.safeParse({
-      amount: amountNum,
-      outcome: outcomes[selectedOutcome],
-      marketId: market?.id || 'temp-id'
-    });
-
-    if (!validation.success) {
-      toast.error("Invalid trade", {
-        description: validation.error.errors[0].message
-      });
+    if (!shares || parseFloat(shares) <= 0) {
+      toast.error("Please enter valid number of shares");
       return;
     }
 
-    toast.success(`${type === "buy" ? "Buy" : "Sell"} order placed!`, {
-      description: `${shares} shares of "${outcomes[selectedOutcome]}" for $${amount}`,
-    });
+    const isYes = selectedOutcome === 'yes';
+
+    if (type === "buy") {
+      await buyShares(isYes, parseInt(shares));
+    } else {
+      await sellShares(isYes, parseInt(shares));
+    }
   };
 
   return (
     <Card className="bg-white border border-gray-200 rounded-xl shadow-lg p-8 sticky top-24">
       <Tabs defaultValue="buy" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6 bg-gray-100 p-1 rounded-xl h-12">
-          <TabsTrigger 
-            value="buy" 
+          <TabsTrigger
+            value="buy"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 rounded-lg font-semibold transition-all"
           >
             <TrendingUp className="w-4 h-4" />
             BUY
           </TabsTrigger>
-          <TabsTrigger 
-            value="sell" 
+          <TabsTrigger
+            value="sell"
             className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 rounded-lg font-semibold transition-all"
           >
             <TrendingDown className="w-4 h-4" />
@@ -77,78 +73,74 @@ export const TradingPanel = ({ market }: TradingPanelProps) => {
           <div>
             <Label className="mb-3 block text-sm font-medium text-gray-700">Select Outcome</Label>
             <div className="grid grid-cols-2 gap-3">
-              {outcomes.map((outcome, idx) => (
-                <Button
-                  key={idx}
-                  variant={selectedOutcome === idx ? "success" : "outline"}
-                  className={`h-12 font-semibold ${selectedOutcome === idx ? "" : "hover:border-success"}`}
-                  onClick={() => setSelectedOutcome(idx)}
-                >
-                  {outcome}
-                </Button>
-              ))}
+              <Button
+                variant={selectedOutcome === 'yes' ? "default" : "outline"}
+                className={`h-12 font-semibold ${selectedOutcome === 'yes' ? "bg-emerald-500 hover:bg-emerald-600" : "hover:border-emerald-500"}`}
+                onClick={() => setSelectedOutcome('yes')}
+              >
+                Yes ({yesPercent}%)
+              </Button>
+              <Button
+                variant={selectedOutcome === 'no' ? "default" : "outline"}
+                className={`h-12 font-semibold ${selectedOutcome === 'no' ? "bg-red-500 hover:bg-red-600" : "hover:border-red-500"}`}
+                onClick={() => setSelectedOutcome('no')}
+              >
+                No ({noPercent}%)
+              </Button>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="amount" className="mb-2 block text-sm font-medium text-gray-700">
-              Amount (USDC)
+            <Label htmlFor="shares" className="mb-2 block text-sm font-medium text-gray-700">
+              Number of Shares
             </Label>
             <Input
-              id="amount"
+              id="shares"
               type="number"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              placeholder="10"
+              value={shares}
+              onChange={(e) => setShares(e.target.value)}
               className="h-12 text-base border-gray-300 focus:ring-2 focus:ring-uniswap-pink rounded-xl"
             />
             <div className="flex gap-2 mt-3">
-              {[25, 50, 75, 100].map((percent) => (
+              {[10, 50, 100].map((num) => (
                 <Button
-                  key={percent}
+                  key={num}
                   variant="outline"
                   size="sm"
-                  onClick={() => setAmount((1000 * (percent / 100)).toString())}
+                  onClick={() => setShares(num.toString())}
                   className="flex-1 h-9 rounded-lg"
                 >
-                  {percent === 100 ? "MAX" : `${percent}%`}
+                  {num}
                 </Button>
               ))}
             </div>
-            <p className="text-xs text-gray-500 mt-2 font-medium">Available: $1,000.00</p>
           </div>
 
           <div className="space-y-3 p-4 rounded-xl bg-gray-50 border border-gray-200">
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Avg. Price:</span>
-              <span className="font-mono font-semibold text-gray-900">${avgPrice}</span>
+              <span className="text-gray-500">Current Probability:</span>
+              <span className="font-mono font-semibold text-gray-900">{selectedOutcome === 'yes' ? yesPercent : noPercent}%</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Est. Shares:</span>
-              <span className="font-mono font-semibold text-gray-900">{shares}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Potential Return:</span>
-              <span className="font-mono font-semibold text-success">+{((parseFloat(maxProfit) / parseFloat(amount || "1")) * 100).toFixed(0)}%</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Max Profit:</span>
-              <span className="font-mono font-semibold text-success">${maxProfit}</span>
-            </div>
-            <div className="flex justify-between text-sm border-t border-gray-200 pt-3">
-              <span className="text-gray-500">Fees (1%):</span>
-              <span className="font-mono font-semibold text-gray-900">${amount ? (parseFloat(amount) * 0.01).toFixed(2) : "0.00"}</span>
+              <span className="text-gray-500">Your Position:</span>
+              <span className="font-mono font-semibold text-gray-900">
+                {userPosition
+                  ? `${selectedOutcome === 'yes' ? userPosition.yesShares.toString() : userPosition.noShares.toString()} shares`
+                  : '0 shares'
+                }
+              </span>
             </div>
           </div>
 
           <Button
             variant="pill"
-            className="w-full gap-2 h-14 text-base"
+            className="w-full gap-2 h-14 text-base bg-uniswap-pink hover:bg-uniswap-pink/90"
             onClick={() => handleTrade("buy")}
-            disabled={!isConnected}
+            disabled={isPending || !isConnected}
           >
             <Wallet className="w-5 h-5" />
-            {isConnected ? "Place Buy Order" : "Connect Wallet to Trade"}
+            {isPending ? 'Processing...' : isConnected ? 'Buy Shares' : 'Connect Wallet'}
           </Button>
 
           {!isConnected && (
@@ -162,42 +154,51 @@ export const TradingPanel = ({ market }: TradingPanelProps) => {
           <div>
             <Label className="mb-3 block text-sm font-medium text-gray-700">Select Outcome</Label>
             <div className="grid grid-cols-2 gap-3">
-              {outcomes.map((outcome, idx) => (
-                <Button
-                  key={idx}
-                  variant={selectedOutcome === idx ? "destructive" : "outline"}
-                  className={`h-12 font-semibold ${selectedOutcome === idx ? "" : "hover:border-destructive"}`}
-                  onClick={() => setSelectedOutcome(idx)}
-                >
-                  {outcome}
-                </Button>
-              ))}
+              <Button
+                variant={selectedOutcome === 'yes' ? "destructive" : "outline"}
+                className={`h-12 font-semibold ${selectedOutcome === 'yes' ? "" : "hover:border-red-500"}`}
+                onClick={() => setSelectedOutcome('yes')}
+              >
+                Yes ({yesPercent}%)
+              </Button>
+              <Button
+                variant={selectedOutcome === 'no' ? "destructive" : "outline"}
+                className={`h-12 font-semibold ${selectedOutcome === 'no' ? "" : "hover:border-red-500"}`}
+                onClick={() => setSelectedOutcome('no')}
+              >
+                No ({noPercent}%)
+              </Button>
             </div>
           </div>
 
           <div>
-            <Label htmlFor="amount-sell" className="mb-2 block text-sm font-medium text-gray-700">
-              Amount (USDC)
+            <Label htmlFor="shares-sell" className="mb-2 block text-sm font-medium text-gray-700">
+              Number of Shares
             </Label>
             <Input
-              id="amount-sell"
+              id="shares-sell"
               type="number"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              placeholder="10"
+              value={shares}
+              onChange={(e) => setShares(e.target.value)}
               className="h-12 text-base border-gray-300 focus:ring-2 focus:ring-uniswap-pink rounded-xl"
             />
-            <p className="text-xs text-gray-500 mt-2 font-medium">Your position: 0 shares</p>
+            <p className="text-xs text-gray-500 mt-2 font-medium">
+              Your position: {userPosition
+                ? `${selectedOutcome === 'yes' ? userPosition.yesShares.toString() : userPosition.noShares.toString()} shares`
+                : '0 shares'
+              }
+            </p>
           </div>
 
           <Button
             variant="destructive"
             className="w-full gap-2 h-14 text-base rounded-xl"
             onClick={() => handleTrade("sell")}
-            disabled={!isConnected}
+            disabled={isPending || !isConnected}
           >
             <TrendingDown className="w-5 h-5" />
-            {isConnected ? "Place Sell Order" : "Connect Wallet to Trade"}
+            {isPending ? 'Processing...' : isConnected ? 'Sell Shares' : 'Connect Wallet'}
           </Button>
         </TabsContent>
       </Tabs>
