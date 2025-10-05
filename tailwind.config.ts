@@ -19,6 +19,10 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        uniswap: {
+          pink: "hsl(var(--uniswap-pink))",
+          "accessible-pink": "hsl(var(--uniswap-accessible-pink))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -30,6 +34,10 @@ export default {
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
+        },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -47,21 +55,24 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        gray: {
+          50: "hsl(var(--gray-50))",
+          100: "hsl(var(--gray-100))",
+          200: "hsl(var(--gray-200))",
+          300: "hsl(var(--gray-300))",
+          400: "hsl(var(--gray-400))",
+          500: "hsl(var(--gray-500))",
+          600: "hsl(var(--gray-600))",
+          900: "hsl(var(--gray-900))",
         },
       },
       borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        lg: "1rem",      /* 16px */
+        md: "0.75rem",   /* 12px */
+        sm: "0.5rem",    /* 8px */
+        xl: "1.25rem",   /* 20px - Uniswap style */
+        "2xl": "1.5rem", /* 24px */
+        full: "9999px",  /* Pill shape */
       },
       keyframes: {
         "accordion-down": {

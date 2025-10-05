@@ -1,4 +1,4 @@
-import { Search, Wallet, User, TrendingUp } from "lucide-react";
+import { Wallet, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAccount, useConnect, useDisconnect } from 'wagmi';
@@ -16,54 +16,47 @@ export const Navbar = () => {
   };
 
   const formatAddress = (addr: string) => {
-    return `${addr.substring(0, 6)}...${addr.substring(addr.length - 4)}`;
+    return `${addr.substring(0, 4)}...${addr.substring(addr.length - 4)}`;
   };
+  
   return (
-    <nav className="bg-card border-b border-border sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-14">
-          <Link to="/" className="flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-primary" />
-            <span className="text-lg font-bold text-foreground">Swappers MX</span>
+    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-between h-[72px]">
+          <Link to="/" className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-gradient-to-br from-uniswap-pink to-uniswap-accessible-pink rounded-lg flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-uniswap-pink to-uniswap-accessible-pink bg-clip-text text-transparent">
+              Swappers
+            </span>
           </Link>
 
-          <div className="flex-1 max-w-xl mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <input
-                type="text"
-                placeholder="Search markets..."
-                className="w-full pl-10 pr-4 py-1.5 text-sm rounded-md bg-secondary border border-border focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+          <div className="flex-1 max-w-md mx-12">
+            <h1 className="text-lg font-semibold text-gray-900 text-center">Prediction Markets</h1>
           </div>
 
           <div className="flex items-center gap-3">
             {isConnected && address ? (
               <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs h-8"
+                variant="secondary"
+                size="default"
+                className="rounded-full font-mono"
                 onClick={() => disconnect()}
               >
-                <Wallet className="w-3.5 h-3.5 mr-1.5" />
+                <Wallet className="w-4 h-4 mr-2" />
                 {formatAddress(address)}
               </Button>
             ) : (
               <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs h-8"
+                variant="pill"
+                size="default"
                 onClick={handleConnect}
               >
-                <Wallet className="w-3.5 h-3.5 mr-1.5" />
-                Connect
+                <Wallet className="w-4 h-4 mr-2" />
+                Connect Wallet
               </Button>
             )}
-
-            <Button variant="ghost" size="icon" className="h-8 w-8">
-              <User className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </div>

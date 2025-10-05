@@ -7,18 +7,26 @@ interface StatCardProps {
 }
 
 const StatCard = ({ icon, label, value }: StatCardProps) => (
-  <div className="text-center">
-    <div className="flex justify-center mb-1 text-muted-foreground">{icon}</div>
-    <div className="text-2xl font-bold mb-0.5">{value}</div>
-    <div className="text-xs text-muted-foreground">{label}</div>
+  <div className="bg-white rounded-xl border border-gray-200 p-6 text-center shadow-sm hover:shadow-md transition-all">
+    <div className="flex justify-center mb-2 text-uniswap-accessible-pink">{icon}</div>
+    <div className="text-3xl font-bold text-gray-900 mb-1">{value}</div>
+    <div className="text-xs uppercase tracking-wide text-gray-500 font-medium">{label}</div>
   </div>
 );
 
 export const HeroSection = () => {
   return (
-    <div className="bg-card border-b border-border">
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+    <div className="bg-gradient-to-b from-gray-50 to-white border-b border-gray-200">
+      <div className="container mx-auto px-6 py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-4xl font-bold text-gray-900 mb-3">
+            Trade on the Outcome
+          </h2>
+          <p className="text-lg text-gray-500">
+            Decentralized prediction markets powered by blockchain
+          </p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
           <StatCard
             icon={<TrendingUp className="w-5 h-5" />}
             label="Total Volume"

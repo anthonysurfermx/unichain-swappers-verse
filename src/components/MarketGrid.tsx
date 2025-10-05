@@ -66,9 +66,18 @@ export const MarketGrid = ({ selectedCategory }: MarketGridProps) => {
   if (isLoading) {
     return (
       <div className="flex-1">
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} className="h-24" />
+            <div key={i} className="bg-white border border-gray-200 rounded-xl p-5 animate-pulse">
+              <div className="flex gap-4">
+                <Skeleton className="h-14 w-14 rounded-xl bg-gray-200" />
+                <div className="flex-1 space-y-3">
+                  <Skeleton className="h-5 w-3/4 bg-gray-200 rounded" />
+                  <Skeleton className="h-4 w-1/2 bg-gray-200 rounded" />
+                  <Skeleton className="h-9 w-full bg-gray-200 rounded-lg" />
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
@@ -77,15 +86,16 @@ export const MarketGrid = ({ selectedCategory }: MarketGridProps) => {
 
   return (
     <div className="flex-1">
-      <div className="space-y-3">
+      <div className="space-y-4">
         {markets?.map((market) => (
           <MarketCard key={market.id} market={market} />
         ))}
       </div>
 
       {markets?.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-muted-foreground">No markets found in this category</p>
+        <div className="text-center py-16 bg-white border border-gray-200 rounded-xl">
+          <p className="text-gray-500 text-lg">No markets found in this category</p>
+          <p className="text-gray-400 text-sm mt-2">Try selecting a different category</p>
         </div>
       )}
     </div>
